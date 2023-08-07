@@ -14,6 +14,6 @@ The server will be able to send messages to all connected clients and recieve me
 
 ## Dependencies
 
-asyncio
-websockets
-aioconsole
+- asyncio
+- websockets
+- aioconsole
