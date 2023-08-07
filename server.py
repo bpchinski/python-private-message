@@ -1,28 +1,43 @@
 import asyncio
 import websockets
+import aioconsole
 
-connected_clients = set()
+CLIENTS = set()
 
-async def handle_client_input(websocket):
+
+async def handle_server_input():
     while True:
-        message_to_send = input("Enter a message to send to the client: ")
-        await websocket.send(message_to_send)
+        if CLIENTS:  # Check if there's at least one connected client
+            message_to_send = await aioconsole.ainput("\nEnter a message to send to clients: ")
+            await broadcast(message_to_send)
+        else:
+            await asyncio.sleep(1)  # Wait for a second before checking again
 
-async def echo(websocket, path):
-    print("Connection received.")
-    connected_clients.add(websocket)
+
+async def broadcast(message):
+    for websocket in CLIENTS.copy():
+        try:
+            await websocket.send(message)
+        except websockets.ConnectionClosed:
+            CLIENTS.remove(websocket)
+            pass
+
+
+async def handler(websocket, path):
+    print("\nConnection received.")
+    CLIENTS.add(websocket)
     try:
-        input_task = asyncio.create_task(handle_client_input(websocket))
         async for message in websocket:
-            print(f"Received message: {message}")
+            print(f"\nReceived message from client: {message}")
     finally:
-        connected_clients.remove(websocket)
+        CLIENTS.remove(websocket)
+
 
 async def main():
-    start_server = websockets.serve(echo, "0.0.0.0", 8765)
-    server = await start_server
-
-    # Keep the server running forever
-    await asyncio.Future()
+    # Create a task for handling server input
+    input_task = asyncio.create_task(handle_server_input())
+    start_server = websockets.serve(handler, "0.0.0.0", 8765)
+    await start_server
+    await asyncio.Future()  # Keep server running
 
 asyncio.run(main())
