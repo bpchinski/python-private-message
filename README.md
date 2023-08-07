@@ -2,7 +2,7 @@
 
 This is a simple python program that I created to be able to send private messages between a host server and one or many clients. This allows users of the client to connect to the server and all recieve the same messages from the server and all send messages to the server. Server users can send messages to all the clients if they know the ip address of the server.
 
-## How to use
+## How To Use
 
 Start up the websocket on a machine with a public ip using the server.py script
 Connect to the websocket using the client.py script
